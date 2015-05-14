@@ -21,28 +21,20 @@ function rfkillWidget.rfkillMute()
     devices = rfkillWidget.getFilteredDevices(devices, excludedDevices)
     if rfkillState == 'OFF' then
         rfkillWidget.setRfkillUp(devices)
-        -- awful.util.spawn("sudo rfkill unblock bluetooth")
-        -- awful.util.spawn("sudo rfkill unblock wwan")
     else
         rfkillWidget.setRfkillDown(devices)
-        -- awful.util.spawn("sudo rfkill block bluetooth")
-        -- awful.util.spawn("sudo rfkill block wwan")
     end
-    -- awful.util.spawn("sudo rfkill block all")
-    -- alert('rfkillMute', 'RfKill: '..rfkillState)
 end
 
+-- Unblock given devices.
 function rfkillWidget.setRfkillUp(devices)
-    -- The problem is simple:
-    -- By default XF86WLAN MUTE/UNMUTE Wlan *only*
-    -- I think it should be easier to have 1 global state based on wlan 
-    -- after that we should display a menu to activate or not each de
     for id, device in ipairs(devices) do
         awful.util.spawn("sudo rfkill unblock "..device)
     end
     return nil
 end
 
+-- Block given devices.
 function rfkillWidget.setRfkillDown(devices)
     for id, device in ipairs(devices) do
         awful.util.spawn("sudo rfkill block "..device)
@@ -50,32 +42,33 @@ function rfkillWidget.setRfkillDown(devices)
     return nil
 end
 
+-- Return the devices list without excluded devices (wlan most of the time)
 function rfkillWidget.getFilteredDevices(devices, excludedDevices)
     local filteredDevices = {}
     for id, device in ipairs(devices) do
         if rfkillWidget.notInTable(excludedDevices, device) then
-            -- We don't want occurences from exclusion list
-            -- alert('getFilteredDevices', device)
+            -- Only return device *NOT* excluded
             table.insert(filteredDevices, device)
         end
     end
     return filteredDevices
 end
 
+-- Return the list of excluded devices
 function rfkillWidget.getExcludedDevices()
     local excludedDevices = {}
-    -- May be usefull to control excluded
+    -- May be useful to control excluded
     table.insert(excludedDevices, 'wlan')
     return excludedDevices
 end
 
+-- Return rfkill capable devices
 function rfkillWidget.getRfkillDevices()
     local devices = {}
     local rfkillDevicesCmd = io.popen("sudo rfkill list all | grep -v 'blocked' | sed -e \"s/^.:.*: //g\"")
     for line in rfkillDevicesCmd:lines() do
         line = rfkillWidget.getRfkillDevicesTranslation(line)
         table.insert(devices, line)
-        -- alert('getRfkillDevices', 'line:'..line)
     end
     rfkillDevicesCmd:close()
     return devices
@@ -85,7 +78,7 @@ end
 --     return '✈'
 -- end
 
--- Return the actual needed name to block/unblock
+-- Return the translated  name to block/unblock
 function rfkillWidget.getRfkillDevicesTranslation(name)
     local devicesName = {}
     devicesName['Bluetooth']    = 'bluetooth'
@@ -94,9 +87,11 @@ function rfkillWidget.getRfkillDevicesTranslation(name)
     return devicesName[name]
 end
 
+-- Return the global *state*, most of the time wlan status
 function rfkillWidget.getRfkillBlockedState()
+    -- @TODO: Add a param to test an other device.
     local output = ''
-    -- If something is blocked lets say everything is, *simpler is better*
+    -- If wlan is blocked lets say everything is, *simpler is better*
     local rfkillStatusCmd = io.popen("sudo rfkill list wlan | grep 'Soft blocked'| sed -e \"s/^.*: //g\"")
     local rfkillStatusValue = rfkillStatusCmd:read()
     rfkillStatusCmd:close()
@@ -105,21 +100,22 @@ function rfkillWidget.getRfkillBlockedState()
     else
         output = 'ON'
     end
-    alert('rfkillStatus', 'RfKillBlockedStatus: '..rfkillStatusValue)
     return output
 end
 
+-- Return true/value if item is in array
 function rfkillWidget.inTable(table, item)
+    --@TODO: Export that to an other lib
     for key, value in pairs(table) do
         if value == item then return key end
     end
     return false
 end
 
+-- Return true/value if item is not in array
 function rfkillWidget.notInTable(table, item)
     for key, value in pairs(table) do
         if value ~= item then return key end
     end
     return false
 end
-
