@@ -119,3 +119,5 @@ function rfkillWidget.notInTable(table, item)
     end
     return false
 end
+
+return rfkillWidget
