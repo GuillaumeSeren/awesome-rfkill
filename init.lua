@@ -79,7 +79,7 @@ end
 -- end
 
 -- Return global rfkill state
-function rfkillWidget.getRfkillState()
+function getRfkillState()
     local output = awful.util.pread('sudo rfkill list all')
     return output
 end
@@ -88,7 +88,7 @@ end
 local rfkillTooltip = nil
 
 -- Remove the toolTip.
-function rfkillWidget.rfkillTooltipRemove()
+function rfkillTooltipRemove()
     if rfkillTooltip ~= nil then
         naughty.destroy(rfkillTooltip)
         rfkillTooltip = nil
@@ -96,13 +96,13 @@ function rfkillWidget.rfkillTooltipRemove()
 end
 
 -- Add the tooltip.
-function rfkillWidget.rfkillTooltipAdd()
-    rfkillWidget.rfkillTooltipRemove()
+function rfkillTooltipAdd()
+    rfkillTooltipRemove()
     local rfkillCapi = {
         mouse = mouse,
         screen = screen
     }
-    local state = rfkillWidget.getRfkillState()
+    local state = getRfkillState()
 
     rfkillTooltip = naughty.notify({
         text = string.format(
