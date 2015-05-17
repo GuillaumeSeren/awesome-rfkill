@@ -78,6 +78,46 @@ end
 --     return '✈'
 -- end
 
+-- Return global rfkill state
+function rfkillWidget.getRfkillState()
+    local output = awful.util.pread('sudo rfkill list all')
+    return output
+end
+
+-- Tooltip instance
+local rfkillTooltip = nil
+
+-- Remove the toolTip.
+function rfkillWidget.rfkillTooltipRemove()
+    if rfkillTooltip ~= nil then
+        naughty.destroy(rfkillTooltip)
+        rfkillTooltip = nil
+    end
+end
+
+-- Add the tooltip.
+function rfkillWidget.rfkillTooltipAdd()
+    rfkillWidget.rfkillTooltipRemove()
+    local rfkillCapi = {
+        mouse = mouse,
+        screen = screen
+    }
+    local state = rfkillWidget.getRfkillState()
+
+    rfkillTooltip = naughty.notify({
+        text = string.format(
+            '<span font_desc="%s">%s</span>',
+            "Terminus",
+            state),
+        timeout = 0,
+        position = "top_right",
+        margin = 10,
+        height = 170,
+        width = 585,
+        screen = rfkillCapi.mouse.screen
+    })
+end
+
 -- Return the translated  name to block/unblock
 function rfkillWidget.getRfkillDevicesTranslation(name)
     local devicesName = {}
