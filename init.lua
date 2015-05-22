@@ -160,4 +160,18 @@ function rfkillWidget.notInTable(table, item)
     return false
 end
 
+-- Return nil if rfkill is not valid (need rfkill command)
+function rfkillWidget.getRfkillWidgetValid()
+    -- We need notmuch command
+    local output = nil
+    -- @FIXME: rfkill need root, find a way to avoid that
+    local rfkillStatusCmd = os.execute("sudo which rfkill")
+    if rfkillStatusCmd ~= 0 then
+        output = nil
+    else
+        output = rfkillStatusCmd
+    end
+    return output
+end
+
 return rfkillWidget
