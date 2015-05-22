@@ -6,6 +6,9 @@ Rfkill Widget for Awesome WM
 ## Why ?
 Find a overall, view of the connection & display a widget.
 
+## WARNING
+As rfkill need root permission, *you need* sudo-able rfkill to made it work.
+
 ## Features
 * Extend the behavior of XF86WLAN to the other capable devices.
 * Display an icon to show machine state.
