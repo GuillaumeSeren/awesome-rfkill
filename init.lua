@@ -18,11 +18,11 @@ function rfkillWidget.rfkillMute()
     local devices = rfkillWidget.getRfkillDevices()
     local excludedDevices = rfkillWidget.getExcludedDevices()
     -- filter devices list
-    devices = rfkillWidget.getFilteredDevices(devices, excludedDevices)
+    local devicesFiltered = rfkillWidget.getFilteredDevices(devices, excludedDevices)
     if rfkillState == 'OFF' then
-        rfkillWidget.setRfkillUp(devices)
+        rfkillWidget.setRfkillUp(devicesFiltered)
     else
-        rfkillWidget.setRfkillDown(devices)
+        rfkillWidget.setRfkillDown(devicesFiltered)
     end
 end
 
