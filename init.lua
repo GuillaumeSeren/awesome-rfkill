@@ -136,9 +136,11 @@ function rfkillWidget.getRfkillBlockedState()
     local rfkillStatusValue = rfkillStatusCmd:read()
     rfkillStatusCmd:close()
     if rfkillStatusValue == 'no' then
-        output = 'OFF'
+        -- Unlocked
+        output = green..'📶 🔓'..coldef
     else
-        output = 'ON'
+        -- Locked
+        output = red..'📶 🔒'..coldef
     end
     return output
 end
