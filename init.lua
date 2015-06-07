@@ -29,6 +29,7 @@ end
 -- Unblock given devices.
 function rfkillWidget.setRfkillUp(devices)
     for id, device in ipairs(devices) do
+        -- alert('setRfkillUp', 'setRfkillUp '..device)
         awful.util.spawn("sudo rfkill unblock "..device)
     end
     return nil
@@ -37,6 +38,7 @@ end
 -- Block given devices.
 function rfkillWidget.setRfkillDown(devices)
     for id, device in ipairs(devices) do
+        -- alert('setRfkillDown', 'setRfkillDown '..device)
         awful.util.spawn("sudo rfkill block "..device)
     end
     return nil
@@ -68,6 +70,7 @@ function rfkillWidget.getRfkillDevices()
     local rfkillDevicesCmd = io.popen("sudo rfkill list all | grep -v 'blocked' | sed -e \"s/^.:.*: //g\"")
     for line in rfkillDevicesCmd:lines() do
         line = rfkillWidget.getRfkillDevicesTranslation(line)
+        -- alert('getRfkillDevices', 'getRfkillDevice '..line)
         table.insert(devices, line)
     end
     rfkillDevicesCmd:close()
@@ -137,9 +140,21 @@ function rfkillWidget.getRfkillBlockedState()
     rfkillStatusCmd:close()
     if rfkillStatusValue == 'no' then
         -- Unlocked
-        output = green..'📶 🔓'..coldef
+        output = 'OFF'
     else
         -- Locked
+        output = 'ON'
+    end
+    return output
+end
+
+-- Return the rfkillBlockedState for display
+function rfkillWidget.getRfkillBlockedStateDisplay()
+    local rfkillBlockedState = rfkillWidget.getRfkillBlockedState
+    local output = nil
+    if rfkillBlockedState == 'OFF' then
+        output = green..'📶 🔓'..coldef
+    else
         output = red..'📶 🔒'..coldef
     end
     return output
