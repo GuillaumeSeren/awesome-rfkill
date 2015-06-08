@@ -14,7 +14,7 @@ rfkillWidget = {}
 -- This mute follow the default behavior of XF86WLAN,
 -- but extend it to other capable devices.
 function rfkillWidget.rfkillMute()
-    local rfkillState = rfkillWidget.getRfkillBlockedState()
+    local rfkillState = getRfkillBlockedState()
     local devices = rfkillWidget.getRfkillDevices()
     local excludedDevices = rfkillWidget.getExcludedDevices()
     -- filter devices list
@@ -131,7 +131,7 @@ function rfkillWidget.getRfkillDevicesTranslation(name)
 end
 
 -- Return the global *state*, most of the time wlan status
-function rfkillWidget.getRfkillBlockedState()
+function getRfkillBlockedState()
     -- @TODO: Add a param to test an other device.
     local output = ''
     -- If wlan is blocked lets say everything is, *simpler is better*
@@ -150,7 +150,7 @@ end
 
 -- Return the rfkillBlockedState for display
 function rfkillWidget.getRfkillBlockedStateDisplay()
-    local rfkillBlockedState = rfkillWidget.getRfkillBlockedState
+    local rfkillBlockedState = getRfkillBlockedState()
     local output = nil
     if rfkillBlockedState == 'OFF' then
         output = green..'📶 🔓'..coldef
