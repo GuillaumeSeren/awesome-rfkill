@@ -91,21 +91,78 @@ end
 local rfkillTooltip = nil
 
 -- Remove the toolTip.
-function rfkillTooltipRemove()
+function rfkillWidget.rfkillTooltipRemove()
     if rfkillTooltip ~= nil then
         naughty.destroy(rfkillTooltip)
         rfkillTooltip = nil
     end
 end
 
+function rfkillWidget.getTooltipContent()
+    output = '| #ID | DEVICE | SOFTBLOCK | HARDBLOCK |\n'
+    local rfkillState = rfkillWidget.getRfkillBlockedState()
+    local devices = rfkillWidget.getRfkillDevices()
+    -- Detail Array:
+    for id, device in ipairs(devices) do
+        -- @FIXME: The list start on 0 and the array on 1 
+        id = (id-1)
+        deviceStatus = rfkillWidget.getRfkillDeviceStatus(id)
+        -- @FIXME: Refactor the display to draw a nice ascii art array
+        output = output ..'| #'..id..' | '..device ..' | '..deviceStatus['soft'] ..' | '..deviceStatus['hard']..' |'.. '\n'
+    end
+    return output
+end
+
+function rfkillWidget.getRfkillDeviceStatus(deviceId)
+    local output = {}
+    -- alert('', 'deviceId:::'..deviceId)
+    softStatus = rfkillWidget.getRfkillDeviceSoftStatus(deviceId)
+    if softStatus == nil then
+        alert('', 'SoftStatus is NIL !!! (device:'..deviceId..')')
+        softStatus = '--'
+    end
+    hardStatus = rfkillWidget.getRfkillDeviceHardStatus(deviceId)
+    if hardStatus == nil then
+        alert('', 'HardStatus is NIL !!! (device:'..deviceId..')')
+        hardStatus = '--'
+    end
+    output['soft'] = softStatus
+    output['hard'] = hardStatus
+    return output
+end
+
+function rfkillWidget.getRfkillDeviceSoftStatus(deviceId)
+    local output = ''
+    -- If wlan is blocked lets say everything is, *simpler is better*
+    local rfkillStatusCmd = io.popen("sudo rfkill list "..deviceId.." | grep 'Soft' | sed \"s/.\\+: //g\"")
+    local rfkillStatusValue = rfkillStatusCmd:read()
+    rfkillStatusCmd:close()
+    -- alert('softStatus', 'soft ::'..rfkillStatusValue)
+    output = rfkillStatusValue
+    return output
+end
+
+function rfkillWidget.getRfkillDeviceHardStatus(deviceId)
+    local output = ''
+    -- If wlan is blocked lets say everything is, *simpler is better*
+    local rfkillStatusCmd = io.popen("sudo rfkill list "..deviceId.." | grep 'Hard' | sed \"s/.\\+: //g\"")
+    local rfkillStatusValue = rfkillStatusCmd:read()
+    rfkillStatusCmd:close()
+    -- alert('softStatus', 'hard ::'..rfkillStatusValue)
+    -- output = rfkillWidgetValue
+    output = rfkillStatusValue
+    return output
+end
+
 -- Add the tooltip.
-function rfkillTooltipAdd()
-    rfkillTooltipRemove()
+function rfkillWidget.rfkillTooltipAdd()
+    rfkillWidget.rfkillTooltipRemove()
     local rfkillCapi = {
         mouse = mouse,
         screen = screen
     }
-    local state = getRfkillState()
+    local state = rfkillWidget.getTooltipContent()
+    -- local state = 'test'
 
     rfkillTooltip = naughty.notify({
         text = string.format(
@@ -131,7 +188,7 @@ function rfkillWidget.getRfkillDevicesTranslation(name)
 end
 
 -- Return the global *state*, most of the time wlan status
-function getRfkillBlockedState()
+function rfkillWidget.getRfkillBlockedState()
     -- @TODO: Add a param to test an other device.
     local output = ''
     -- If wlan is blocked lets say everything is, *simpler is better*
@@ -141,16 +198,18 @@ function getRfkillBlockedState()
     if rfkillStatusValue == 'no' then
         -- Unlocked
         output = 'OFF'
+        -- alert('getRfkillBlockedState', 'getRfkillState off')
     else
         -- Locked
         output = 'ON'
+        -- alert('getRfkillBlockedState', 'getRfkillState on')
     end
     return output
 end
 
 -- Return the rfkillBlockedState for display
 function rfkillWidget.getRfkillBlockedStateDisplay()
-    local rfkillBlockedState = getRfkillBlockedState()
+    local rfkillBlockedState = rfkillWidget.getRfkillBlockedState()
     local output = nil
     if rfkillBlockedState == 'OFF' then
         output = green..'📶 🔓'..coldef
