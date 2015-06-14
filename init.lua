@@ -14,7 +14,7 @@ rfkillWidget = {}
 -- This mute follow the default behavior of XF86WLAN,
 -- but extend it to other capable devices.
 function rfkillWidget.rfkillMute()
-    local rfkillState = getRfkillBlockedState()
+    local rfkillState = rfkillWidget.getRfkillBlockedState()
     local devices = rfkillWidget.getRfkillDevices()
     local excludedDevices = rfkillWidget.getExcludedDevices()
     -- filter devices list
