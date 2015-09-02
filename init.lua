@@ -113,7 +113,7 @@ function rfkillWidget.getTooltipContent()
     local devices = rfkillWidget.getRfkillDevices()
     -- Detail Array:
     for id, device in ipairs(devices) do
-        -- @FIXME: The list start on 0 and the array on 1 
+        -- @FIXME: The list start on 0 and the array on 1
         id = (id-1)
         deviceStatus = rfkillWidget.getRfkillDeviceStatus(id)
         -- @FIXME: Refactor the display to draw a nice ascii art array
@@ -125,9 +125,9 @@ end
 -- Return rfkill global status of a given device {{{1
 function rfkillWidget.getRfkillDeviceStatus(deviceId)
     local output = {}
-        if rfkillDebug == true then
-            alert('', 'deviceId:::'..deviceId)
-        end
+    if rfkillDebug == true then
+        alert('', 'deviceId:::'..deviceId)
+    end
     softStatus = rfkillWidget.getRfkillDeviceSoftStatus(deviceId)
     if softStatus == nil then
         if rfkillDebug == true then
@@ -154,9 +154,9 @@ function rfkillWidget.getRfkillDeviceSoftStatus(deviceId)
     local rfkillStatusCmd = io.popen("sudo rfkill list "..deviceId.." | grep 'Soft' | sed \"s/.\\+: //g\"")
     local rfkillStatusValue = rfkillStatusCmd:read()
     rfkillStatusCmd:close()
-        if rfkillDebug == true then
-            alert('softStatus', 'soft ::'..rfkillStatusValue)
-        end
+    if rfkillDebug == true then
+        alert('softStatus', 'soft ::'..rfkillStatusValue)
+    end
     output = rfkillStatusValue
     return output
 end
@@ -168,9 +168,9 @@ function rfkillWidget.getRfkillDeviceHardStatus(deviceId)
     local rfkillStatusCmd = io.popen("sudo rfkill list "..deviceId.." | grep 'Hard' | sed \"s/.\\+: //g\"")
     local rfkillStatusValue = rfkillStatusCmd:read()
     rfkillStatusCmd:close()
-        if rfkillDebug == true then
-            alert('softStatus', 'hard ::'..rfkillStatusValue)
-        end
+    if rfkillDebug == true then
+        alert('softStatus', 'hard ::'..rfkillStatusValue)
+    end
     -- output = rfkillWidgetValue
     output = rfkillStatusValue
     return output
@@ -188,9 +188,9 @@ function rfkillWidget.rfkillTooltipAdd()
 
     rfkillTooltip = naughty.notify({
         text = string.format(
-            '<span font_desc="%s">%s</span>',
-            "Terminus",
-            state),
+        '<span font_desc="%s">%s</span>',
+        "Terminus",
+        state),
         timeout = 0,
         position = "top_right",
         margin = 10,
