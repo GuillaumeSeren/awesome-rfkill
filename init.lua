@@ -121,12 +121,12 @@ function rfkillWidget.getRfkillDeviceStatus(deviceId)
     -- alert('', 'deviceId:::'..deviceId)
     softStatus = rfkillWidget.getRfkillDeviceSoftStatus(deviceId)
     if softStatus == nil then
-        alert('', 'SoftStatus is NIL !!! (device:'..deviceId..')')
+        -- alert('', 'SoftStatus is NIL !!! (device:'..deviceId..')')
         softStatus = '--'
     end
     hardStatus = rfkillWidget.getRfkillDeviceHardStatus(deviceId)
     if hardStatus == nil then
-        alert('', 'HardStatus is NIL !!! (device:'..deviceId..')')
+        -- alert('', 'HardStatus is NIL !!! (device:'..deviceId..')')
         hardStatus = '--'
     end
     output['soft'] = softStatus
@@ -219,10 +219,10 @@ function rfkillWidget.getRfkillBlockedStateDisplay()
     local rfkillBlockedState = rfkillWidget.getRfkillBlockedState()
     local output = nil
     if rfkillBlockedState == 'OFF' then
-        -- @fixme use ✈ for term compat
         output = green..'📶 🔓'..coldef
     else
-        output = red..'📶 🔒'..coldef
+        -- output = red..'📶 🔒'..coldef
+        output = red..'📶 ✈'..coldef
     end
     return output
 end
