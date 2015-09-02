@@ -6,11 +6,18 @@
 -- Licence GPLv3
 --
 -- Main RfKill widget lib.
+-- This widget display the status of the rfkill lock.
 -- ---------------------------------------------
 
 -- Rfkill Widget Class
 rfkillWidget = {}
 
+-- member variables {{{1
+-- Tooltip instance
+local rfkillTooltip = nil
+local rfkillDebug = false
+
+-- Rfkill global switch {{{1
 -- This mute follow the default behavior of XF86WLAN,
 -- but extend it to other capable devices.
 function rfkillWidget.rfkillMute()
@@ -26,25 +33,30 @@ function rfkillWidget.rfkillMute()
     end
 end
 
--- Unblock given devices.
+-- Unblock given devices {{{1
 function rfkillWidget.setRfkillUp(devices)
     for id, device in ipairs(devices) do
-        -- alert('setRfkillUp', 'setRfkillUp '..device)
+        if rfkillDebug == true then
+            alert('setRfkillUp', 'setRfkillUp '..device)
+        end
         awful.util.spawn("sudo rfkill unblock "..device)
     end
     return nil
 end
 
--- Block given devices.
+-- Block given devices {{{1
 function rfkillWidget.setRfkillDown(devices)
     for id, device in ipairs(devices) do
-        -- alert('setRfkillDown', 'setRfkillDown '..device)
+        if rfkillDebug == true then
+            alert('setRfkillDown', 'setRfkillDown '..device)
+        end
         awful.util.spawn("sudo rfkill block "..device)
     end
     return nil
 end
 
--- Return the devices list without excluded devices (wlan most of the time)
+-- Return the devices list without excluded devices {{{1
+-- (wlan most of the time)
 function rfkillWidget.getFilteredDevices(devices, excludedDevices)
     local filteredDevices = {}
     for id, device in ipairs(devices) do
@@ -56,41 +68,37 @@ function rfkillWidget.getFilteredDevices(devices, excludedDevices)
     return filteredDevices
 end
 
--- Return the list of excluded devices
+-- Return the list of excluded devices {{{1
 function rfkillWidget.getExcludedDevices()
     local excludedDevices = {}
+    -- @FIXME: Export the list in member and add method to update it.
     -- May be useful to control excluded
     table.insert(excludedDevices, 'wlan')
     return excludedDevices
 end
 
--- Return rfkill capable devices
+-- Return rfkill capable devices {{{1
 function rfkillWidget.getRfkillDevices()
     local devices = {}
     local rfkillDevicesCmd = io.popen("sudo rfkill list all | grep -v 'blocked' | sed -e \"s/^.:.*: //g\"")
     for line in rfkillDevicesCmd:lines() do
         line = rfkillWidget.getRfkillDevicesTranslation(line)
-        -- alert('getRfkillDevices', 'getRfkillDevice '..line)
+        if rfkillDebug == true then
+            alert('getRfkillDevices', 'getRfkillDevice '..line)
+        end
         table.insert(devices, line)
     end
     rfkillDevicesCmd:close()
     return devices
 end
 
--- function rfkillWidget.getRfkillWidget()
---     return '✈'
--- end
-
--- Return global rfkill state
+-- Return global rfkill state {{{1
 function getRfkillState()
     local output = awful.util.pread('sudo rfkill list all')
     return output
 end
 
--- Tooltip instance
-local rfkillTooltip = nil
-
--- Remove the toolTip.
+-- Remove the toolTip {{{1
 function rfkillWidget.rfkillTooltipRemove()
     if rfkillTooltip ~= nil then
         naughty.destroy(rfkillTooltip)
@@ -98,13 +106,14 @@ function rfkillWidget.rfkillTooltipRemove()
     end
 end
 
+-- Return the text content for tooltip {{{1
 function rfkillWidget.getTooltipContent()
     output = '| #ID | DEVICE | SOFTBLOCK | HARDBLOCK |\n'
     local rfkillState = rfkillWidget.getRfkillBlockedState()
     local devices = rfkillWidget.getRfkillDevices()
     -- Detail Array:
     for id, device in ipairs(devices) do
-        -- @FIXME: The list start on 0 and the array on 1 
+        -- @FIXME: The list start on 0 and the array on 1
         id = (id-1)
         deviceStatus = rfkillWidget.getRfkillDeviceStatus(id)
         -- @FIXME: Refactor the display to draw a nice ascii art array
@@ -113,17 +122,24 @@ function rfkillWidget.getTooltipContent()
     return output
 end
 
+-- Return rfkill global status of a given device {{{1
 function rfkillWidget.getRfkillDeviceStatus(deviceId)
     local output = {}
-    -- alert('', 'deviceId:::'..deviceId)
+    if rfkillDebug == true then
+        alert('', 'deviceId:::'..deviceId)
+    end
     softStatus = rfkillWidget.getRfkillDeviceSoftStatus(deviceId)
     if softStatus == nil then
-        alert('', 'SoftStatus is NIL !!! (device:'..deviceId..')')
+        if rfkillDebug == true then
+            alert('', 'SoftStatus is NIL !!! (device:'..deviceId..')')
+        end
         softStatus = '--'
     end
     hardStatus = rfkillWidget.getRfkillDeviceHardStatus(deviceId)
     if hardStatus == nil then
-        alert('', 'HardStatus is NIL !!! (device:'..deviceId..')')
+        if rfkillDebug == true then
+            alert('', 'HardStatus is NIL !!! (device:'..deviceId..')')
+        end
         hardStatus = '--'
     end
     output['soft'] = softStatus
@@ -131,30 +147,36 @@ function rfkillWidget.getRfkillDeviceStatus(deviceId)
     return output
 end
 
+-- Return rfkill soft status of a given device {{{1
 function rfkillWidget.getRfkillDeviceSoftStatus(deviceId)
     local output = ''
     -- If wlan is blocked lets say everything is, *simpler is better*
     local rfkillStatusCmd = io.popen("sudo rfkill list "..deviceId.." | grep 'Soft' | sed \"s/.\\+: //g\"")
     local rfkillStatusValue = rfkillStatusCmd:read()
     rfkillStatusCmd:close()
-    -- alert('softStatus', 'soft ::'..rfkillStatusValue)
+    if rfkillDebug == true then
+        alert('softStatus', 'soft ::'..rfkillStatusValue)
+    end
     output = rfkillStatusValue
     return output
 end
 
+-- Return rfkill hard status of a given device {{{1
 function rfkillWidget.getRfkillDeviceHardStatus(deviceId)
     local output = ''
     -- If wlan is blocked lets say everything is, *simpler is better*
     local rfkillStatusCmd = io.popen("sudo rfkill list "..deviceId.." | grep 'Hard' | sed \"s/.\\+: //g\"")
     local rfkillStatusValue = rfkillStatusCmd:read()
     rfkillStatusCmd:close()
-    -- alert('softStatus', 'hard ::'..rfkillStatusValue)
+    if rfkillDebug == true then
+        alert('softStatus', 'hard ::'..rfkillStatusValue)
+    end
     -- output = rfkillWidgetValue
     output = rfkillStatusValue
     return output
 end
 
--- Add the tooltip.
+-- Add the tooltip {{{1
 function rfkillWidget.rfkillTooltipAdd()
     rfkillWidget.rfkillTooltipRemove()
     local rfkillCapi = {
@@ -166,9 +188,9 @@ function rfkillWidget.rfkillTooltipAdd()
 
     rfkillTooltip = naughty.notify({
         text = string.format(
-            '<span font_desc="%s">%s</span>',
-            "Terminus",
-            state),
+        '<span font_desc="%s">%s</span>',
+        "Terminus",
+        state),
         timeout = 0,
         position = "top_right",
         margin = 10,
@@ -178,7 +200,8 @@ function rfkillWidget.rfkillTooltipAdd()
     })
 end
 
--- Return the translated  name to block/unblock
+-- Return the translated name to block/unblock {{{1
+-- @FIXME: We may better use id if we can
 function rfkillWidget.getRfkillDevicesTranslation(name)
     local devicesName = {}
     devicesName['Bluetooth']    = 'bluetooth'
@@ -187,7 +210,8 @@ function rfkillWidget.getRfkillDevicesTranslation(name)
     return devicesName[name]
 end
 
--- Return the global *state*, most of the time wlan status
+-- Return the global *state* {{{1
+-- most of the time wlan status
 function rfkillWidget.getRfkillBlockedState()
     -- @TODO: Add a param to test an other device.
     local output = ''
@@ -198,28 +222,33 @@ function rfkillWidget.getRfkillBlockedState()
     if rfkillStatusValue == 'no' then
         -- Unlocked
         output = 'OFF'
-        -- alert('getRfkillBlockedState', 'getRfkillState off')
+        if rfkillDebug == true then
+            alert('getRfkillBlockedState', 'getRfkillState off')
+        end
     else
         -- Locked
         output = 'ON'
-        -- alert('getRfkillBlockedState', 'getRfkillState on')
+        if rfkillDebug == true then
+            alert('getRfkillBlockedState', 'getRfkillState on')
+        end
     end
     return output
 end
 
--- Return the rfkillBlockedState for display
+-- Return the rfkillBlockedState for display {{{1
 function rfkillWidget.getRfkillBlockedStateDisplay()
     local rfkillBlockedState = rfkillWidget.getRfkillBlockedState()
     local output = nil
     if rfkillBlockedState == 'OFF' then
         output = green..'📶 🔓'..coldef
     else
-        output = red..'📶 🔒'..coldef
+        -- output = red..'📶 🔒'..coldef
+        output = red..'📶 ✈'..coldef
     end
     return output
 end
 
--- Return true/value if item is in array
+-- Return true/value if item is in array {{{1
 function rfkillWidget.inTable(table, item)
     --@TODO: Export that to an other lib
     for key, value in pairs(table) do
@@ -228,7 +257,7 @@ function rfkillWidget.inTable(table, item)
     return false
 end
 
--- Return true/value if item is not in array
+-- Return true/value if item is not in array {{{1
 function rfkillWidget.notInTable(table, item)
     for key, value in pairs(table) do
         if value ~= item then return key end
@@ -236,7 +265,8 @@ function rfkillWidget.notInTable(table, item)
     return false
 end
 
--- Return nil if rfkill is not valid (need rfkill command)
+-- Return nil if rfkill is not valid {{{1
+-- (need rfkill command)
 function rfkillWidget.getRfkillWidgetValid()
     -- We need notmuch command
     local output = nil
@@ -249,5 +279,6 @@ function rfkillWidget.getRfkillWidgetValid()
     end
     return output
 end
+-- }}}
 
 return rfkillWidget
