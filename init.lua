@@ -15,6 +15,7 @@ rfkillWidget = {}
 -- member variables {{{1
 -- Tooltip instance
 local rfkillTooltip = nil
+local rfkillDebug = false
 
 -- Rfkill global switch {{{1
 -- This mute follow the default behavior of XF86WLAN,
@@ -35,7 +36,9 @@ end
 -- Unblock given devices {{{1
 function rfkillWidget.setRfkillUp(devices)
     for id, device in ipairs(devices) do
-        -- alert('setRfkillUp', 'setRfkillUp '..device)
+        if rfkillDebug == true then
+            alert('setRfkillUp', 'setRfkillUp '..device)
+        end
         awful.util.spawn("sudo rfkill unblock "..device)
     end
     return nil
@@ -44,7 +47,9 @@ end
 -- Block given devices {{{1
 function rfkillWidget.setRfkillDown(devices)
     for id, device in ipairs(devices) do
-        -- alert('setRfkillDown', 'setRfkillDown '..device)
+        if rfkillDebug == true then
+            alert('setRfkillDown', 'setRfkillDown '..device)
+        end
         awful.util.spawn("sudo rfkill block "..device)
     end
     return nil
@@ -78,7 +83,9 @@ function rfkillWidget.getRfkillDevices()
     local rfkillDevicesCmd = io.popen("sudo rfkill list all | grep -v 'blocked' | sed -e \"s/^.:.*: //g\"")
     for line in rfkillDevicesCmd:lines() do
         line = rfkillWidget.getRfkillDevicesTranslation(line)
-        -- alert('getRfkillDevices', 'getRfkillDevice '..line)
+        if rfkillDebug == true then
+            alert('getRfkillDevices', 'getRfkillDevice '..line)
+        end
         table.insert(devices, line)
     end
     rfkillDevicesCmd:close()
@@ -118,15 +125,21 @@ end
 -- Return rfkill global status of a given device {{{1
 function rfkillWidget.getRfkillDeviceStatus(deviceId)
     local output = {}
-    -- alert('', 'deviceId:::'..deviceId)
+        if rfkillDebug == true then
+            alert('', 'deviceId:::'..deviceId)
+        end
     softStatus = rfkillWidget.getRfkillDeviceSoftStatus(deviceId)
     if softStatus == nil then
-        -- alert('', 'SoftStatus is NIL !!! (device:'..deviceId..')')
+        if rfkillDebug == true then
+            alert('', 'SoftStatus is NIL !!! (device:'..deviceId..')')
+        end
         softStatus = '--'
     end
     hardStatus = rfkillWidget.getRfkillDeviceHardStatus(deviceId)
     if hardStatus == nil then
-        -- alert('', 'HardStatus is NIL !!! (device:'..deviceId..')')
+        if rfkillDebug == true then
+            alert('', 'HardStatus is NIL !!! (device:'..deviceId..')')
+        end
         hardStatus = '--'
     end
     output['soft'] = softStatus
@@ -141,7 +154,9 @@ function rfkillWidget.getRfkillDeviceSoftStatus(deviceId)
     local rfkillStatusCmd = io.popen("sudo rfkill list "..deviceId.." | grep 'Soft' | sed \"s/.\\+: //g\"")
     local rfkillStatusValue = rfkillStatusCmd:read()
     rfkillStatusCmd:close()
-    -- alert('softStatus', 'soft ::'..rfkillStatusValue)
+        if rfkillDebug == true then
+            alert('softStatus', 'soft ::'..rfkillStatusValue)
+        end
     output = rfkillStatusValue
     return output
 end
@@ -153,7 +168,9 @@ function rfkillWidget.getRfkillDeviceHardStatus(deviceId)
     local rfkillStatusCmd = io.popen("sudo rfkill list "..deviceId.." | grep 'Hard' | sed \"s/.\\+: //g\"")
     local rfkillStatusValue = rfkillStatusCmd:read()
     rfkillStatusCmd:close()
-    -- alert('softStatus', 'hard ::'..rfkillStatusValue)
+        if rfkillDebug == true then
+            alert('softStatus', 'hard ::'..rfkillStatusValue)
+        end
     -- output = rfkillWidgetValue
     output = rfkillStatusValue
     return output
@@ -205,11 +222,15 @@ function rfkillWidget.getRfkillBlockedState()
     if rfkillStatusValue == 'no' then
         -- Unlocked
         output = 'OFF'
-        -- alert('getRfkillBlockedState', 'getRfkillState off')
+        if rfkillDebug == true then
+            alert('getRfkillBlockedState', 'getRfkillState off')
+        end
     else
         -- Locked
         output = 'ON'
-        -- alert('getRfkillBlockedState', 'getRfkillState on')
+        if rfkillDebug == true then
+            alert('getRfkillBlockedState', 'getRfkillState on')
+        end
     end
     return output
 end
